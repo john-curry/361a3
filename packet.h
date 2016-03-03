@@ -17,7 +17,7 @@
 typedef std::basic_string<u_char> ustring;
 typedef std::bitset<4> short_bit;
 typedef std::bitset<8> l_short_bit;
-
+typedef std::bitset<3> ip_flags_t;
 class packet { 
   friend std::ostream& operator<<(std::ostream& os, packet& p);
   public:
@@ -42,14 +42,29 @@ class packet {
     suseconds_t ts()  const; 
     ustring get_data() const;
     unsigned int data_size() const;
-
+    u_char get_ip_type();
     /* ICMP Protocol stuff */
     u_int8_t get_icmp_type();
     std::string get_router(); // returns the ip address of the router that dropped the icmp packet; throws bad_packet_error otherwise 
+    /* end */
+
+    /* IP Protocol stuff */
+    u_char ip_type;
+    int16_t fragment_number;
+    u_short identification;
+    short ip_total_length;
+
+    bool more_fragments();
   private:
     /* ICMP Protocol stuff */
-    u_int8_t type;
+    u_int8_t icmp_type;
     std::string router;
+    /* end */
+    
+    /* IP Protocol stuff */
+    //ip_flags_t ip_flags;
+    bool more_frags;
+    /* end */
 
     ustring p_string; // string varient of the packet
     ustring data; // string varient of the data

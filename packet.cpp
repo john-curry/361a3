@@ -26,11 +26,7 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
     
     mip = (struct ip*)p;
     // rip addresses out of ip header    
-    this->saddr = string(inet_ntoa(mip->ip_src));
-    this->daddr = string(inet_ntoa(mip->ip_dst));
-    assert(this->saddr != this->daddr);
     ip_header_length = mip->ip_hl * 4;
-
     assert(ip_header_length >= 20 && ip_header_length <= 60);
 
     this->ip_hdr_len = ip_header_length;
@@ -38,6 +34,16 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
     if (too_short(ip_header_length)) {
       cerr << "Captured packet too small: iphdr." << endl;
     } else {
+
+      this->saddr = string(inet_ntoa(mip->ip_src));
+      this->daddr = string(inet_ntoa(mip->ip_dst));
+      assert(this->saddr != this->daddr);
+      this->ip_type = mip->ip_p;
+      this->fragment_number = htons(mip->ip_off)&IP_OFFMASK;
+      this->identification  = mip->ip_id;
+      this->ip_total_length = mip->ip_len;
+      this->more_frags = htons(mip->ip_off)&IP_MF;
+
       // jump over ip header to the tcp header
       p += ip_header_length;
       cap_len -= ip_header_length;
@@ -45,7 +51,7 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
       micmp = (struct icmphdr*)p;
 
       icmp_header_length = sizeof(struct icmphdr);
-      this->type = micmp->type;
+      this->icmp_type = micmp->type;
       if (micmp->type != ICMP_TIME_EXCEEDED) {
         /* do ping analysis of some sort */
       } else {
@@ -67,6 +73,9 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
   }
   this->completed = true;
 }
+
+//void packet::read_ip_header(struct ip ) {
+
 
 ustring packet::get_data() const {
   if (!completed) throw bad_packet_error("get_data");
@@ -143,23 +152,34 @@ u_short packet::window_size() {
 }
 
 u_int8_t packet::get_icmp_type() {
-  return this->type;
+  return this->icmp_type;
 }
 
 std::string packet::get_router() {
-  if (this->type != ICMP_TIME_EXCEEDED) throw bad_packet_error("This packet is not a traceroute packet.");
+  if (this->icmp_type != ICMP_TIME_EXCEEDED) throw bad_packet_error("This packet is not a traceroute packet.");
   return this->router;
+}
+
+bool packet::more_fragments() {
+  return this->more_frags;
 }
 
 std::ostream& operator<<(std::ostream& os, packet& p) {
   os << " src_addr: " << p.src_addr()
      << " dst_addr: " << p.dst_addr()
+     << " more_coming?: " << p.more_frags
+     << " frag_num: " << (p.fragment_number)
+     << " ip_type: "  << (int)p.ip_type
+     << " id: "       << p.identification
+     << " ip_total_length: " << p.ip_total_length
+     << " ip_hdr_length: " << (int)p.ip_hdr_len
      << " icmp_type: " << (int)p.get_icmp_type()
      ;
      if (p.get_icmp_type() == 11) {
        os << " gateway_addr: " << p.get_router()
        ;
      }
+
      //<< " ack_num: " << (p.ack_num)
      //<< " seq_num: " << (p.seq_num)
      //<< " ack: " << p.ack()
