@@ -43,6 +43,7 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
       this->identification  = mip->ip_id;
       this->ip_total_length = mip->ip_len;
       this->more_frags = htons(mip->ip_off)&IP_MF;
+      this->ttl = (uint8_t)mip->ip_ttl;
 
       // jump over ip header to the tcp header
       p += ip_header_length;
@@ -162,47 +163,4 @@ std::string packet::get_router() {
 
 bool packet::more_fragments() {
   return this->more_frags;
-}
-
-std::ostream& operator<<(std::ostream& os, packet& p) {
-  os << " src_addr: " << p.src_addr()
-     << " dst_addr: " << p.dst_addr()
-     << " more_coming?: " << p.more_frags
-     << " frag_num: " << (p.fragment_number)
-     << " ip_type: "  << (int)p.ip_type
-     << " id: "       << p.identification
-     << " ip_total_length: " << p.ip_total_length
-     << " ip_hdr_length: " << (int)p.ip_hdr_len
-     << " icmp_type: " << (int)p.get_icmp_type()
-     ;
-     if (p.get_icmp_type() == 11) {
-       os << " gateway_addr: " << p.get_router()
-       ;
-     }
-
-     //<< " ack_num: " << (p.ack_num)
-     //<< " seq_num: " << (p.seq_num)
-     //<< " ack: " << p.ack()
-     //<< " syn: " << p.syn()
-     //<< " has data: " << p.has_data;
-     //if (p.has_data) {
-     //  os << " data size: " << p.data_size();
-     //}
-     ;
-  return os;
-}
-
-u_short short_swap( u_short s ) {
-  unsigned char b1, b2;
-  
-  b1 = s & 255;
-  b2 = (s >> 8) & 255;
-
-  return (b1 << 8) + b2;
-}
-void ConvertToBinary(int n) {
-  if (n / 2 != 0) {
-  ConvertToBinary(n / 2);
-  }
-  printf("%d", n % 2);
 }

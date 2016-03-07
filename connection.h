@@ -7,17 +7,22 @@
 #include <cassert>
 #include <map>
 #include "packet.h"
-#include "state.h"
+//#include "state.h"
+
+class connection_state;
 
 class connection {
+
   friend std::ostream& operator<<(std::ostream& os, connection& p);
   friend class connections;
+
   public:
 
     connection(packet p);
 
     void change_state(std::shared_ptr<connection_state> s);
-    bool check_packet(packet p); void recv_packet(packet p);
+    bool check_packet(packet p); 
+    void recv_packet(packet p);
     bool is_completed();
     void set_completed(bool);
     bool reseted();
@@ -33,9 +38,10 @@ class connection {
     void do_rtt_calculation(packet);
     void do_byte_calculation(packet);
     void do_packet_calculation(packet);
+    void on_hop(packet);
+
     std::string state_name();
   private:
-    // start state with no syn and no fin
     std::string src_addr;
     std::string dst_addr;
     int src_port;

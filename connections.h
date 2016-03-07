@@ -12,14 +12,14 @@ class connections {
     std::vector<connection*> conns;
     suseconds_t beginning;
     size_t resets = 0;
-    std::function<bool(connection*)> is_complete  = [ ] (connection * c) { return  c->is_completed(); };   
-    std::function<bool(connection*)> not_complete = [ ] (connection * c) { return !c->is_completed(); };   
+    //std::function<bool(connection*)> is_complete  = [ ] (connection * c) { return  c->is_completed(); };   
+    //std::function<bool(connection*)> not_complete = [ ] (connection * c) { return !c->is_completed(); };   
   public:
     connections() { };
     void add_connection(connection * c) {
-      conns.push_back(c);
-      c->configure_timestamp(this->beginning);
-      resets = c->reseted() ? resets + 1 : resets;
+      //conns.push_back(c);
+      //c->configure_timestamp(this->beginning);
+      //resets = c->reseted() ? resets + 1 : resets;
     };
 
     bool empty() { return conns.size() == 0 ? true : false; };
@@ -34,22 +34,22 @@ class connections {
     };
    std::vector<connection*> incomplete_connections() {
      std::vector<connection*> ret = conns;
-      auto completed = [] (connection * c) {
-        auto name = c->state->name();
-        return name == "s0f1" || 
-               name == "s0f2" || 
-               name == "s1f1" || 
-               name == "s1f2" || 
-               name == "s2f1" ||
-               name == "s2f2"
-               ;
-      };
-     ret.erase(std::remove_if(ret.begin(), ret.end(), completed), ret.end());
+     // auto completed = [] (connection * c) {
+     //   auto name = c->state->name();
+     //   return name == "s0f1" || 
+     //          name == "s0f2" || 
+     //          name == "s1f1" || 
+     //          name == "s1f2" || 
+     //          name == "s2f1" ||
+     //          name == "s2f2"
+     //          ;
+     // };
+     //ret.erase(std::remove_if(ret.begin(), ret.end(), completed), ret.end());
      return ret;
    };
    std::vector<connection*> complete_connections() {
      std::vector<connection*> ret = conns;
-     ret.erase(std::remove_if(ret.begin(), ret.end(), not_complete), ret.end());
+     //ret.erase(std::remove_if(ret.begin(), ret.end(), not_complete), ret.end());
      return ret;
    };
 
@@ -57,22 +57,22 @@ class connections {
    size_t incomplete_size() { return this->incomplete_connections().size(); };
 
    std::vector<int> packets() {
-     using namespace std;
-     auto comp = this->complete_connections();
+     //using namespace std;
+     //auto comp = this->complete_connections();
      std::vector<int> ret;
-     for (auto i : comp) {
-       ret.push_back(i->packet_num);
-     }
+     //for (auto i : comp) {
+     //  ret.push_back(i->packet_num);
+     //}
      return ret;
    };
 
    std::vector<suseconds_t> rtts() {
-     using namespace std;
-     auto comp = this->complete_connections();
+     //using namespace std;
+     //auto comp = this->complete_connections();
      std::vector<suseconds_t> ret;
-     for (auto i : comp) {
-       ret.insert(ret.end(), i->rtts.begin(), i->rtts.end());
-     }
+     //for (auto i : comp) {
+     //  ret.insert(ret.end(), i->rtts.begin(), i->rtts.end());
+     //}
      return ret;
    };
 

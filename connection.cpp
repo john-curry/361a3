@@ -9,8 +9,6 @@ connection::connection(packet p) {
   this->dst_port         = p.dst_port();
   this->connection_reset = p.rst();
   this->start_time = p.ts_milli() + p.ts_sec()*1000000;
-  this->change_state(std::shared_ptr<s0f0>(new s0f0));
-  //this->recv_packet(p);
 }
 
 bool connection::check_packet(packet p) {
@@ -32,7 +30,6 @@ void connection::recv_packet(packet p) {
 
   if (p.rst()) {
     this->connection_reset = true;
-    this->change_state(std::shared_ptr<reset>(new reset));
   } 
 
   this->state->recv_packet(p, this);
@@ -178,7 +175,7 @@ std::ostream& operator<<(std::ostream& os, connection& c) {
      << " Destination Address: "     << c.dst_addr                      << endl
      << " Source Port: "             << c.src_port                      << endl
      << " Destination port: "        << c.dst_port                      << endl
-     << " Status: "                  << *c.state                        << endl
+//     << " Status: "                  << *c.state                        << endl
   ;
   if (c.complete) {
    os<< " Start time: "              << c.start()                       << endl

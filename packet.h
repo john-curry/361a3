@@ -53,6 +53,7 @@ class packet {
     int16_t fragment_number;
     u_short identification;
     short ip_total_length;
+    uint8_t ttl;
 
     bool more_fragments();
   private:
