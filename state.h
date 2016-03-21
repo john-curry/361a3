@@ -9,6 +9,7 @@ class connection_state {
     virtual void recv_packet(packet p, connection * c) = 0;
 };
 
+class connection_start : public connection_state  { std::string name() const override; void recv_packet(packet,connection*); };
 class packet_sent : public connection_state  { std::string name() const override; void recv_packet(packet,connection*); };
 class trace_start : public connection_state  { std::string name() const override; void recv_packet(packet,connection*); };
 class packet_recvd : public connection_state { std::string name() const override; void recv_packet(packet,connection*); };

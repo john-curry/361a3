@@ -1,6 +1,7 @@
 #include "connection.h"
 #include "state.h"
 #include <cassert>
+#include <algorithm>
 
 connection::connection(packet p) {
   this->src_addr         = p.src_addr(); 
@@ -9,29 +10,35 @@ connection::connection(packet p) {
   this->dst_port         = p.dst_port();
   this->connection_reset = p.rst();
   this->start_time = p.ts_milli() + p.ts_sec()*1000000;
+  this->state = std::shared_ptr<connection_state>(new connection_start);
+  assert(check_packet(p));
+  this->recv_packet(p);
 }
 
 bool connection::check_packet(packet p) {
   assert(!(this->src_to_dst(p) && this->dst_to_src(p)));
+
+  if (p.get_icmp_type() == 11 && p.dst_addr() == this->src_addr) return true;
+
   return this->src_to_dst(p) ^ this->dst_to_src(p);
 }
 
 void connection::recv_packet(packet p) {
   using namespace std;
-  assert(this->check_packet(p));
-
-  this->window_sizes.push_back(p.window_size());
-
-  this->do_packet_calculation(p);
-
-  this->do_byte_calculation(p);
-
-  this->do_rtt_calculation(p);
-
-  if (p.rst()) {
-    this->connection_reset = true;
-  } 
-
+//  assert(this->check_packet(p));
+//
+//  this->window_sizes.push_back(p.window_size());
+//
+//  this->do_packet_calculation(p);
+//
+//  this->do_byte_calculation(p);
+//
+//  this->do_rtt_calculation(p);
+//
+//  if (p.rst()) {
+//    this->connection_reset = true;
+//  } 
+//
   this->state->recv_packet(p, this);
 }
 
@@ -169,25 +176,10 @@ bool connection::reseted() { return this->connection_reset; }
 
 std::string connection::state_name() { return state->name(); }
 
-std::ostream& operator<<(std::ostream& os, connection& c) {
+void connection::add_to_route(std::string address) {
   using namespace std;
-  os << " Source Address: "          << c.src_addr                      << endl
-     << " Destination Address: "     << c.dst_addr                      << endl
-     << " Source Port: "             << c.src_port                      << endl
-     << " Destination port: "        << c.dst_port                      << endl
-//     << " Status: "                  << *c.state                        << endl
-  ;
-  if (c.complete) {
-   os<< " Start time: "              << c.start()                       << endl
-     << " End time: "                << c.end()                         << endl
-     << " Duration: "                << c.duration()                    << endl
-     << " packets src to dst: "      << c.packet_src_to_dst_num         << endl
-     << " packets dst to src: "      << c.packet_dst_to_src_num         << endl
-     << " packets: "                 << c.packet_num                    << endl
-     << " data bytes src to dst: "   << c.byte_src_to_dst_num           << endl
-     << " data bytes dst to src: "   << c.byte_dst_to_src_num           << endl
-     << " data bytes total: "        << c.byte_total                    << endl
-  ;
+  if (find(route.begin(), route.end(), address) == route.end()) {
+    route.push_back(address);
   }
-  return os;
 }
+

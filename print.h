@@ -5,12 +5,8 @@
 std::ostream& operator<<(std::ostream& os, packet& p) {
   os << " src_addr: " << p.src_addr()
      << " dst_addr: " << p.dst_addr()
-     << " more_coming?: " << p.more_frags
-     << " frag_num: " << (p.fragment_number)
-     << " ip_type: "  << (int)p.ip_type
-     << " id: "       << p.identification
-     << " ip_total_length: " << p.ip_total_length
-     << " ip_hdr_length: " << (int)p.ip_hdr_len
+     << " ip_type: " << (int)p.ip_type
+     //<< " more_coming?: " << p.more_frags
      << " icmp_type: " << (int)p.get_icmp_type()
      << " ip_ttl: " << (int)p.ttl
      ;
@@ -19,6 +15,27 @@ std::ostream& operator<<(std::ostream& os, packet& p) {
        ;
      }
      ;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, connection& c) {
+  using namespace std;
+  os << "Source node: " << c.src_addr << endl
+     << "Destination node: " << c.dst_addr << endl
+     << "IP addresses of the intermediate destination nodes: " 
+     << endl;
+  int i = 1;
+  for (auto r : c.route) {
+    os << "router " << i++ << ": " << r  << "," << endl;
+  }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, connections& p) {
+  using namespace std;
+  for (auto c : p.conns) {
+    os << *c << endl;
+  }
   return os;
 }
 #endif

@@ -41,7 +41,10 @@ class connection {
     void on_hop(packet);
 
     std::string state_name();
+    void add_to_route(std::string address);
   private:
+    std::vector<std::string> route;
+
     std::string src_addr;
     std::string dst_addr;
     int src_port;

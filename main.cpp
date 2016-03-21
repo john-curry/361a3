@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   char errbuf[1000];
   struct pcap_pkthdr header;
   struct bpf_program fp;
-  char filter_exp[] = "icmp";
+  char filter_exp[] = "icmp or udp";
   
   if (argc < 1) {
     cout << "Not enough arguements." << endl;
@@ -35,7 +35,16 @@ int main(int argc, char **argv) {
 
   while ((mpacket = pcap_next(pcap, &header)) != NULL) {
     auto new_packet = packet(mpacket, header.ts, header.caplen);
+
     cout << new_packet << endl;
+
+    if (conns.is_new_connection(new_packet)) {
+      conns.add_connection(new connection(new_packet));
+    } else {
+      conns.recv_packet(new_packet);
+    }
   }
+
+  cout << conns << endl;
   return 0;
 }

@@ -52,6 +52,9 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
       micmp = (struct icmphdr*)p;
 
       icmp_header_length = sizeof(struct icmphdr);
+      if (too_short(icmp_header_length)) {
+        cerr << "ICMP packet not completely captured." << endl;
+      }
       this->icmp_type = micmp->type;
       if (micmp->type != ICMP_TIME_EXCEEDED) {
         /* do ping analysis of some sort */
@@ -74,9 +77,6 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
   }
   this->completed = true;
 }
-
-//void packet::read_ip_header(struct ip ) {
-
 
 ustring packet::get_data() const {
   if (!completed) throw bad_packet_error("get_data");
