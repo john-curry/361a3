@@ -31,20 +31,20 @@ int main(int argc, char **argv) {
     cout << "Could not install filter: " << filter_exp << pcap_geterr(pcap) << endl;
   }
   
-  connections conns;
+  auto conns = new connections();
 
   while ((mpacket = pcap_next(pcap, &header)) != NULL) {
     auto new_packet = packet(mpacket, header.ts, header.caplen);
 
     cout << new_packet << endl;
 
-    if (conns.is_new_connection(new_packet)) {
-      conns.add_connection(new connection(new_packet));
+    if (conns->is_new_connection(new_packet)) {
+      conns->add_connection(new connection(new_packet));
     } else {
-      conns.recv_packet(new_packet);
+      conns->recv_packet(new_packet);
     }
   }
-
-  cout << conns << endl;
+  connections*& conr = conns;
+  cout << conr << endl;
   return 0;
 }

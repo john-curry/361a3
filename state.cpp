@@ -25,7 +25,7 @@ std::string packet_sent::name() const { return "packet_sent"; }
 void packet_sent::recv_packet(packet p, connection * c) {
   if (p.get_icmp_type() == 11) {
     //std::cout << "Got address " << p.get_router() << std::endl;
-    c->add_to_route(p.get_router()); 
+    c->add_to_route(p.get_return_ttl(), p.get_router()); 
     //change_connection_state<packet_recvd>(c);
   }
 }

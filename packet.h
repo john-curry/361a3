@@ -18,6 +18,9 @@ typedef std::basic_string<u_char> ustring;
 typedef std::bitset<4> short_bit;
 typedef std::bitset<8> l_short_bit;
 typedef std::bitset<3> ip_flags_t;
+typedef uint16_t ip_id_t; 
+typedef suseconds_t timestamp_t;
+
 class packet { 
   friend std::ostream& operator<<(std::ostream& os, packet& p);
   public:
@@ -43,23 +46,29 @@ class packet {
     ustring get_data() const;
     unsigned int data_size() const;
     u_char get_ip_type();
+
     /* ICMP Protocol stuff */
     u_int8_t get_icmp_type();
     std::string get_router(); // returns the ip address of the router that dropped the icmp packet; throws bad_packet_error otherwise 
+    uint8_t get_return_ttl();
+
     /* end */
 
+
     /* IP Protocol stuff */
+    ip_id_t ip_id;
     u_char ip_type;
     int16_t fragment_number;
     u_short identification;
     short ip_total_length;
     uint8_t ttl;
-
     bool more_fragments();
+    /* end */
   private:
     /* ICMP Protocol stuff */
     u_int8_t icmp_type;
     std::string router;
+    uint8_t return_ttl;
     /* end */
     
     /* IP Protocol stuff */

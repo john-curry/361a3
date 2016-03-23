@@ -9,11 +9,13 @@
 #include "packet.h"
 //#include "state.h"
 
+class connections;
 class connection_state;
 
 class connection {
 
-  friend std::ostream& operator<<(std::ostream& os, connection& p);
+  friend std::ostream& operator<<(std::ostream& os, connection*& p);
+  friend std::ostream& operator<<(std::ostream& os, connections*& p);
   friend class connections;
 
   public:
@@ -38,12 +40,18 @@ class connection {
     void do_rtt_calculation(packet);
     void do_byte_calculation(packet);
     void do_packet_calculation(packet);
-    void on_hop(packet);
+    float average_rtt();
+    float standard_deviation_rtt();
 
     std::string state_name();
-    void add_to_route(std::string address);
+    void add_to_route(uint8_t, std::string address);
+    int fragments = 1;
+    int num_icmp_packets = 0;
+    int num_udp_packets = 0;
+    int last_fragment_offset = -1;
   private:
     std::vector<std::string> route;
+    std::map<u_short, timestamp_t> rtt_start;
 
     std::string src_addr;
     std::string dst_addr;

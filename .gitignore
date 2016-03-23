@@ -4,3 +4,6 @@ tags
 tag
 sniff
 *.pcap
+*.out
+*.log
+*.class

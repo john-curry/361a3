@@ -2,7 +2,7 @@ CC=g++
 FLAGS=-Wall -pedantic -g -std=c++11
 LINKS=-lpcap
 OUT=sniff
-ARGS=linux.pcap #ip-trace-1 #trace-icmp.pcap
+ARGS=ip-trace-1.pcap #trace-icmp.pcap#linux.pcap #ip-trace-1.pcap #trace-icmp.pcap linux.pcap
 FILES=$(wildcard *.cpp)
 OBJS=$(FILES:.cpp=.o)
 HEADERS=$(wildcard *.h)
@@ -11,8 +11,8 @@ $(OUT): $(OBJS)
 	$(CC) $(FLAGS) $^ -o $@ $(LINKS)
 
 
-$(OBJS): $(FILES) $(HEADERS)
-	$(CC) $(FLAGS) -c $(filter %.cpp,$^)
+%.o: %.cpp $(HEADERS)
+	$(CC) $(FLAGS) -c $< 
 
 %.h:
 

@@ -27,7 +27,10 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
     mip = (struct ip*)p;
     // rip addresses out of ip header    
     ip_header_length = mip->ip_hl * 4;
-    assert(ip_header_length >= 20 && ip_header_length <= 60);
+
+    //assert(ip_header_length >= 20);
+    //assert(ip_header_length <= 60);
+
 
     this->ip_hdr_len = ip_header_length;
      
@@ -39,6 +42,7 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
       this->daddr = string(inet_ntoa(mip->ip_dst));
       assert(this->saddr != this->daddr);
       this->ip_type = mip->ip_p;
+      this->ip_id = (ip_id_t)mip->ip_id;
       this->fragment_number = htons(mip->ip_off)&IP_OFFMASK;
       this->identification  = mip->ip_id;
       this->ip_total_length = mip->ip_len;
@@ -67,6 +71,8 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
         this->router = this->saddr;
         this->daddr = string(inet_ntoa(ip_header->ip_src));
         this->saddr = string(inet_ntoa(ip_header->ip_dst));
+        this->return_ttl = (uint8_t)ip_header->ip_ttl;
+        this->ip_id = (ip_id_t)ip_header->ip_id;
         /* CONVENTION: if this is a type 11 packet, treat it as an incoming packet from the original destination  */ 
         //this->daddr = string(inet_ntoa(icmp_packet->icmp_ip.ip_dst));
         //this->saddr = string(inet_ntoa(icmp_packet->icmp_ip.ip_src));
@@ -159,6 +165,11 @@ u_int8_t packet::get_icmp_type() {
 std::string packet::get_router() {
   if (this->icmp_type != ICMP_TIME_EXCEEDED) throw bad_packet_error("This packet is not a traceroute packet.");
   return this->router;
+}
+
+uint8_t packet::get_return_ttl() {
+  if (this->icmp_type != ICMP_TIME_EXCEEDED || this->return_ttl == -1) throw bad_packet_error("This packet is not a traceroute packet.");
+  return this->return_ttl;
 }
 
 bool packet::more_fragments() {
