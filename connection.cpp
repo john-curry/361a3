@@ -30,11 +30,11 @@ void connection::recv_packet(packet p) {
   if (p.ip_type == 17) this->num_udp_packets++;
   if (p.ip_type == 1 ) this->num_icmp_packets++;
 
-  if (p.ttl == 1 && p.more_fragments()  && (p.get_icmp_type() == ICMP_ECHO)) {
+  if (p.ttl == 1 && p.more_fragments()  && ((p.get_icmp_type() == ICMP_ECHO) || p.ip_type == 17)) {
     this->fragments++;
   }
 
-  if (p.ttl == 1 && !p.more_fragments() && (p.get_icmp_type() == ICMP_ECHO)) {
+  if (p.ttl == 1 && !p.more_fragments() && ((p.get_icmp_type() == ICMP_ECHO) || p.ip_type == 17)) {
     this->last_fragment_offset = p.fragment_number;
   }
 

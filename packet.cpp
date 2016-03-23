@@ -74,8 +74,6 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
         this->return_ttl = (uint8_t)ip_header->ip_ttl;
         this->ip_id = (ip_id_t)ip_header->ip_id;
         /* CONVENTION: if this is a type 11 packet, treat it as an incoming packet from the original destination  */ 
-        //this->daddr = string(inet_ntoa(icmp_packet->icmp_ip.ip_dst));
-        //this->saddr = string(inet_ntoa(icmp_packet->icmp_ip.ip_src));
         
       }
      
