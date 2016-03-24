@@ -6,16 +6,14 @@ std::ostream& operator<<(std::ostream& os, packet& p) {
   os << " src_addr: " << p.src_addr()
      << " dst_addr: " << p.dst_addr()
      << " ip_type: " << (int)p.ip_type
-     << " ip_id: "   << (int)p.ip_id
-     << " icmp_type: " << (int)p.get_icmp_type()
-     << " ip_ttl: " << (int)p.ttl
      ;
-     if (p.get_icmp_type() == 11) {
-       os << " gateway_addr: " << p.get_router()
-          << " return_ttl: " <<(int)p.get_return_ttl()
-       ;
-     }
-     ;
+  if (p.ip_type == 1) {
+    os << " icmp_type: " << (int)p.get_icmp_type();
+  }
+  if (p.ip_type == 17) {
+    os << " udp port: " << (int)p.dst_port();
+  }
+  ;
   return os;
 }
 

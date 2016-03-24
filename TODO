@@ -1,0 +1,3 @@
+for windows use sequence number for rtt matching
+for linux use source for rtt matching
+average out the three packets sent by traceroute

@@ -1,4 +1,5 @@
 #include "packet.h"
+#include <netinet/udp.h>
 #include <cassert>
 #include <endian.h>
 #include <stdint.h>
@@ -53,30 +54,52 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
       p += ip_header_length;
       cap_len -= ip_header_length;
 
-      micmp = (struct icmphdr*)p;
-
-      icmp_header_length = sizeof(struct icmphdr);
-      if (too_short(icmp_header_length)) {
-        cerr << "ICMP packet not completely captured." << endl;
+      // linux udp packet 
+      if (this->ip_type == 17) {
+        struct udphdr * mudp = (struct udphdr*)p;
+        this->ip_id = mudp->source;
+        this->dport = htons(mudp->dest);
       }
-      this->icmp_type = micmp->type;
-      if (micmp->type != ICMP_TIME_EXCEEDED) {
-        /* do ping analysis of some sort */
-      } else {
-        /* do rip gateway address out of packet */
-        p += 8;
-        cap_len -= 8;
+      
+      else if (this->ip_type == 1) {
+        micmp = (struct icmphdr*)p;
+        icmp_header_length = sizeof(struct icmphdr);
 
-        struct ip * ip_header = (struct ip*)p;
-        this->router = this->saddr;
-        this->daddr = string(inet_ntoa(ip_header->ip_src));
-        this->saddr = string(inet_ntoa(ip_header->ip_dst));
-        this->return_ttl = (uint8_t)ip_header->ip_ttl;
-        this->ip_id = (ip_id_t)ip_header->ip_id;
-        /* CONVENTION: if this is a type 11 packet, treat it as an incoming packet from the original destination  */ 
-        //this->daddr = string(inet_ntoa(icmp_packet->icmp_ip.ip_dst));
-        //this->saddr = string(inet_ntoa(icmp_packet->icmp_ip.ip_src));
-        
+        if (too_short(icmp_header_length)) {
+          cerr << "ICMP packet not completely captured." << endl;
+        }
+        this->icmp_type = micmp->type;
+        if (micmp->type != ICMP_TIME_EXCEEDED) {
+          /* do ping analysis of some sort */
+        } else {
+          /* do rip gateway address out of packet */
+          p += 8;
+          cap_len -= 8;
+
+          struct ip * ip_header = (struct ip*)p;
+          this->router = this->saddr;
+          this->daddr = string(inet_ntoa(ip_header->ip_src));
+          this->saddr = string(inet_ntoa(ip_header->ip_dst));
+          this->return_ttl = (uint8_t)ip_header->ip_ttl;
+
+          // linux udp traceroute file
+          if (ip_header->ip_p == 17) {
+            int header_len = ip_header->ip_hl * 4;
+            p += header_len;
+            cap_len -= header_len;
+            struct udphdr * udp_header = (struct udphdr*)p;
+            this->ip_id = udp_header->source;
+            this->sport = udp_header->source;
+            //this->dport = htons(udp_header->dest);
+          } 
+          else { // windows traceroute file
+            this->ip_id = (ip_id_t)ip_header->ip_id;
+          }
+
+
+          /* CONVENTION: if this is a type 11 packet, treat it as an incoming packet from the original destination  */ 
+          
+        }
       }
      
     }

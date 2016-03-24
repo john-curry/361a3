@@ -10,6 +10,7 @@ connection::connection(packet p) {
   this->src_port         = p.src_port(); 
   this->dst_port         = p.dst_port();
   this->connection_reset = p.rst();
+  this->id               = p.ip_id;
   this->start_time = p.ts_milli() + p.ts_sec()*1000000;
   this->state = std::shared_ptr<connection_state>(new connection_start);
   assert(check_packet(p));
@@ -19,7 +20,13 @@ connection::connection(packet p) {
 bool connection::check_packet(packet p) {
   assert(!(this->src_to_dst(p) && this->dst_to_src(p)));
 
+  if (this->udp_packets[p.dst_port()]) return true;
+
+  if (this->rtt_start.count(p.ip_id) > 0) return true;
+
   if (p.get_icmp_type() == 11 && p.dst_addr() == this->src_addr) return true;
+
+  if ((p.src_addr() == this->src_addr) && (p.dst_addr() == this->dst_addr)) return true;
 
   return this->src_to_dst(p) ^ this->dst_to_src(p);
 }
@@ -30,11 +37,17 @@ void connection::recv_packet(packet p) {
   if (p.ip_type == 17) this->num_udp_packets++;
   if (p.ip_type == 1 ) this->num_icmp_packets++;
 
-  if (p.ttl == 1 && p.more_fragments()  && (p.get_icmp_type() == ICMP_ECHO)) {
+  if (p.ip_type == 17) {
+      this->udp_packets[p.dst_port()] = true;
+      this->udp_packets[p.dst_port() + 1] = true;
+      this->udp_packets[p.dst_port() + 2] = true;
+  }
+
+  if ((p.ttl == 1 && p.more_fragments()) /*&& (p.get_icmp_type() == ICMP_ECHO)*/) {
     this->fragments++;
   }
 
-  if (p.ttl == 1 && !p.more_fragments() && (p.get_icmp_type() == ICMP_ECHO)) {
+  if (p.ttl == 1 && !p.more_fragments() /*&& (p.get_icmp_type() == ICMP_ECHO || p.ip_type == 17)*/) {
     this->last_fragment_offset = p.fragment_number;
   }
 
@@ -69,7 +82,7 @@ float connection::standard_deviation_rtt() {
   using namespace std;
   float sum = 0;
   for (const auto rtt : rtts) {
-    sum += pow(abs(rtt - this->average_rtt()), 2);
+    sum += (rtt - this->average_rtt())*(rtt - this->average_rtt());
   }
   assert(sum >= 0);
   if (rtts.size() == 0) return 0;

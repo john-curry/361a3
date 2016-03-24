@@ -20,6 +20,12 @@ class connections {
     bool is_new_connection(packet p) {
       if (p.fragment_number != 0) return false;
 
+      for (const auto c : conns) {
+        if (c->check_packet(p)) return false;
+      }
+
+      if (p.ttl > 1) return false;
+
       if ((p.ttl == 1) && (p.ip_type == 17)) {
         return true;
       }
@@ -27,6 +33,8 @@ class connections {
       if ((p.ttl == 1) && (p.get_icmp_type() == 8)) {
         return true;
       }
+
+
 
       return false;
     };

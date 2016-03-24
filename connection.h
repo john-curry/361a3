@@ -50,7 +50,9 @@ class connection {
     int num_udp_packets = 0;
     int last_fragment_offset = -1;
   private:
+    int id;
     std::vector<std::string> route;
+    std::vector<bool> udp_packets = std::vector<bool>(65536, false);
     std::map<u_short, timestamp_t> rtt_start;
 
     std::string src_addr;
