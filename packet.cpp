@@ -95,13 +95,8 @@ packet::packet(const u_char * p, struct timeval ts, unsigned int cap_len) {
           else { // windows traceroute file
             this->ip_id = (ip_id_t)ip_header->ip_id;
           }
-
-
-          /* CONVENTION: if this is a type 11 packet, treat it as an incoming packet from the original destination  */ 
-          
         }
       }
-     
     }
   }
   this->completed = true;

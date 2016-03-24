@@ -47,7 +47,7 @@ void connection::recv_packet(packet p) {
     this->fragments++;
   }
 
-  if (p.ttl == 1 && !p.more_fragments() /*&& (p.get_icmp_type() == ICMP_ECHO || p.ip_type == 17)*/) {
+  if (p.ttl == 1 && !p.more_fragments() /*&& ((p.get_icmp_type() == ICMP_ECHO) || p.ip_type == 17)*/) {
     this->last_fragment_offset = p.fragment_number;
   }
 
