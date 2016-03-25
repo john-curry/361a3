@@ -36,8 +36,6 @@ int main(int argc, char **argv) {
   while ((mpacket = pcap_next(pcap, &header)) != NULL) {
     auto new_packet = packet(mpacket, header.ts, header.caplen);
 
-    cout << new_packet << endl;
-
     if (conns->is_new_connection(new_packet)) {
       conns->add_connection(new connection(new_packet));
     } else {
