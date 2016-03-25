@@ -1,0 +1,28 @@
+Author: John Curyy
+Student Number: V00755720
+
+Compile: make
+
+Run: make run
+
+To change the input file, edit the ARGS variable in the makefile
+
+Structure:
+  The program is losely structured as a Model/View/Controller where the 
+  connections class is the controller, the view is the << operator which
+  is overloaded for the models which are the connection and packet classes.
+
+  Packets are encapsulate in the packet class located in the packet.h file. 
+
+  A single connection is in the connection class located in the connection.h file.
+
+  Connections are managed by the connections class in the connections.h file.
+
+  Packets are processed as they come in. The connections class checks to see if the packet
+  is part of a already existing connection, otherwise it is passed to the connection it is
+  associated with. Packets are checked in the check_packet function of the connection class.
+  
+  Packets are processed by their respective connections in the recv_packet function of the
+  connection class. 
+
+  Printing is done in the print.cpp file.
